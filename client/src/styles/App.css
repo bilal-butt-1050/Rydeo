@@ -2,3 +2,6 @@
 @import url('./components/Navbar.css');
 @import url('./components/MapView.css');
 @import url('./pages/Login.css');
+@import url('./pages/AdminDashboard.css');
+@import url('./pages/DriverDashboard.css');
+@import url('./pages/StudentDashboard.css');

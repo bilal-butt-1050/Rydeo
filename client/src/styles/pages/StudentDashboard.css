@@ -1,0 +1,294 @@
+.student-dashboard {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 2rem;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .dashboard-header h1 {
+    color: #00e5ff;
+    font-size: 2rem;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .welcome-text {
+    color: #aaa;
+    margin: 0;
+  }
+  
+  .logout-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #ff5252;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+  }
+  
+  .logout-btn:hover {
+    background-color: #ff1744;
+  }
+  
+  .message {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    background-color: #2a2a2a;
+    color: #00e5ff;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 1.5rem;
+    color: #00e5ff;
+  }
+  
+  .student-info-card {
+    background-color: #1a1a1a;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .student-info-card h2 {
+    color: #00e5ff;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .info-item .label {
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .info-item .value {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .bus-location-card {
+    background-color: #1a1a1a;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .bus-location-card h2 {
+    color: #00e5ff;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .location-inactive {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .location-inactive p {
+    color: #ff5252;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .help-text {
+    color: #888 !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .location-active {
+    padding: 1rem;
+  }
+  
+  .location-active .status {
+    color: #4caf50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  
+  .location-details {
+    background-color: #222;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #4caf50;
+  }
+  
+  .location-details p {
+    color: #ccc;
+    margin: 0.5rem 0;
+  }
+  
+  .location-details strong {
+    color: #00e5ff;
+  }
+  
+  .stops-section {
+    background-color: #1a1a1a;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .stops-section h2 {
+    color: #00e5ff;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .stops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .stop-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #222;
+    border-radius: 8px;
+    border-left: 4px solid #00e5ff;
+    transition: transform 0.2s;
+  }
+  
+  .stop-card:hover {
+    transform: translateX(5px);
+  }
+  
+  .stop-card.default-stop {
+    border-left-color: #4caf50;
+    background-color: #1e2a1e;
+  }
+  
+  .stop-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #00e5ff;
+    color: #000;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  
+  .default-stop .stop-number {
+    background-color: #4caf50;
+  }
+  
+  .stop-details {
+    flex: 1;
+  }
+  
+  .stop-details h3 {
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: #4caf50;
+    color: white;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .stop-details p {
+    color: #888;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .map-section {
+    background-color: #1a1a1a;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .map-section h2 {
+    color: #00e5ff;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .student-map {
+    width: 100%;
+    height: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #222;
+  }
+  
+  .map-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #888;
+    font-size: 1.1rem;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .student-dashboard {
+      padding: 1rem;
+      margin: 1rem;
+    }
+  
+    .dashboard-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+  
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .student-map {
+      height: 400px;
+    }
+  }
