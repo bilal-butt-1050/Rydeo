@@ -1,146 +1,138 @@
 import { useState, useEffect } from "react";
-import { logout } from "../api";
-import MapView from "../components/MapView";
-import { io } from "socket.io-client";
+import { getDriverProfile, logout } from "../api";
+import "../styles/pages/DriverDashboard.css";
 
 export default function DriverDashboard() {
   const [msg, setMsg] = useState("");
-  const [socket, setSocket] = useState(null);
-  const [isSharing, setIsSharing] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isTracking, setIsTracking] = useState(false);
 
   useEffect(() => {
-    // Connect to Socket.IO
-    const newSocket = io("http://localhost:5000", {
-      withCredentials: true,
-    });
-
-    newSocket.on("connect", () => {
-      console.log("Connected to server");
-      newSocket.emit("join-driver");
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
+    fetchProfile();
   }, []);
 
-  useEffect(() => {
-    let watchId;
-
-    if (isSharing && socket) {
-      if ("geolocation" in navigator) {
-        watchId = navigator.geolocation.watchPosition(
-          (position) => {
-            const location = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              timestamp: new Date().toISOString(),
-            };
-            
-            setCurrentLocation(location);
-            socket.emit("driver-location-update", location);
-          },
-          (error) => {
-            console.error("Geolocation error:", error);
-            setMsg("Error getting location: " + error.message);
-          },
-          {
-            enableHighAccuracy: true,
-            maximumAge: 5000,
-            timeout: 10000,
-          }
-        );
-      } else {
-        setMsg("Geolocation not supported");
-        setIsSharing(false);
-      }
+  const fetchProfile = async () => {
+    try {
+      const res = await getDriverProfile();
+      setProfile(res.data);
+      setLoading(false);
+    } catch (err) {
+      setMsg(err.response?.data?.message || "Failed to load profile");
+      setLoading(false);
     }
-
-    return () => {
-      if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, [isSharing, socket]);
-
-  const toggleLocationSharing = () => {
-    setIsSharing(!isSharing);
-    setMsg(isSharing ? "Location sharing stopped" : "Location sharing started");
   };
 
   const handleLogout = async () => {
     try {
-      if (socket) {
-        socket.emit("driver-offline");
-        socket.disconnect();
-      }
       await logout();
       setMsg("👋 Logged out successfully");
-      window.location.href = "/user/login";
+      setTimeout(() => {
+        window.location.href = "/user/login";
+      }, 1000);
     } catch (err) {
       setMsg(err.response?.data?.message || "Failed to log out");
     }
   };
 
+  const handleStartTracking = () => {
+    setIsTracking(true);
+    setMsg("✅ Location tracking started");
+    // TODO: Implement actual location tracking
+  };
+
+  const handleStopTracking = () => {
+    setIsTracking(false);
+    setMsg("🛑 Location tracking stopped");
+    // TODO: Stop location tracking
+  };
+
+  if (loading) {
+    return <div className="driver-dashboard">Loading...</div>;
+  }
+
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Driver Dashboard</h1>
+    <div className="driver-dashboard">
+      <h1>Driver Dashboard</h1>
+      
+      {msg && <p className={msg.includes("✅") || msg.includes("👋") ? "success-msg" : "error-msg"}>{msg}</p>}
+
+      {/* Profile Section */}
+      <div className="profile-section">
+        <h2>My Profile</h2>
+        <div className="profile-info">
+          <div className="info-item">
+            <span className="info-label">Name:</span>
+            <span className="info-value">{profile?.name || "Not available"}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">Login ID:</span>
+            <span className="info-value">{profile?.loginID || "Not available"}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">Phone:</span>
+            <span className="info-value">{profile?.phone || "Not available"}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">Bus ID:</span>
+            <span className="info-value">{profile?.bus || "Not assigned"}</span>
+          </div>
+          <div className="info-item">
+            <span className="info-label">Role:</span>
+            <span className="info-value">Driver</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Route Information */}
+      <div className="route-section">
+        <h2>Current Route</h2>
+        <div className="route-info">
+          <div className="route-detail">
+            <span className="route-label">Route Name:</span>
+            <span className="route-value">Main Campus Route</span>
+          </div>
+          <div className="route-detail">
+            <span className="route-label">Start Point:</span>
+            <span className="route-value">Campus Gate</span>
+          </div>
+          <div className="route-detail">
+            <span className="route-label">End Point:</span>
+            <span className="route-value">City Center</span>
+          </div>
+          <div className="route-detail">
+            <span className="route-label">Total Stops:</span>
+            <span className="route-value">8</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Status Section */}
+      <div className="status-section">
+        <h2>Tracking Status</h2>
+        <div className={`status-indicator ${isTracking ? "status-active" : "status-inactive"}`}>
+          <span className={`status-dot ${isTracking ? "active" : "inactive"}`}></span>
+          {isTracking ? "Tracking Active" : "Tracking Inactive"}
+        </div>
+      </div>
+
+      {/* Tracking Controls */}
+      <div className="tracking-controls">
+        {!isTracking ? (
+          <button onClick={handleStartTracking} className="start-tracking-btn">
+            Start Tracking
+          </button>
+        ) : (
+          <button onClick={handleStopTracking} className="stop-tracking-btn">
+            Stop Tracking
+          </button>
+        )}
+      </div>
+
+      <div className="logout-section">
         <button onClick={handleLogout} className="logout-btn">
           Logout
         </button>
-      </div>
-
-      {msg && <p className="message">{msg}</p>}
-
-      <div className="dashboard-content">
-        <div className="info-panel">
-          <h2>Location Sharing</h2>
-          
-          <div className="control-panel">
-            <button 
-              onClick={toggleLocationSharing}
-              className={`share-btn ${isSharing ? 'active' : ''}`}
-            >
-              {isSharing ? '⏹ Stop Sharing' : '▶ Start Sharing'}
-            </button>
-            
-            <div className="status-indicator">
-              <span className={`status-dot ${isSharing ? 'active' : ''}`}></span>
-              {isSharing ? 'Sharing Location' : 'Not Sharing'}
-            </div>
-          </div>
-
-          {currentLocation && (
-            <div className="location-info">
-              <h3>Current Position</h3>
-              <p>Lat: {currentLocation.latitude.toFixed(6)}</p>
-              <p>Lng: {currentLocation.longitude.toFixed(6)}</p>
-              <p className="timestamp">
-                Updated: {new Date(currentLocation.timestamp).toLocaleTimeString()}
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="map-section">
-          <MapView 
-            buses={currentLocation ? [{
-              busId: 'current',
-              busNumber: 'Your Bus',
-              latitude: currentLocation.latitude,
-              longitude: currentLocation.longitude,
-            }] : []}
-            currentUserLocation={currentLocation ? {
-              lat: currentLocation.latitude,
-              lng: currentLocation.longitude
-            } : null}
-            showUserLocation={true}
-          />
-        </div>
       </div>
     </div>
   );
