@@ -7,7 +7,7 @@ import "./styles/App.css";
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
-import RouteManagement from './pages/RouteManagement';
+import RouteDetails from './pages/RouteDetails';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -47,8 +47,8 @@ const App = () => {
           element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/user/login" />}
         />
         <Route
-          path="/admin/routes"
-          element={user?.role === 'admin' ? <RouteManagement /> : <Navigate to="/user/login" />}
+          path="/admin/routes/:id"
+          element={user?.role === 'admin' ? <RouteDetails /> : <Navigate to="/user/login" />}
         />
       </Routes>
     </Router>

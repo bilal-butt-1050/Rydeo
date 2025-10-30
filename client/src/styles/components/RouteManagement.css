@@ -1,0 +1,125 @@
+.route-management {
+  width: 100%;
+}
+
+.route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.route-header h2 {
+  font-size: 1.8rem;
+  color: #fff;
+}
+
+.add-route-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #00e5ff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.add-route-btn:hover {
+  background-color: #00bcd4;
+  transform: translateY(-2px);
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #aaa;
+}
+
+.no-routes {
+  text-align: center;
+  padding: 3rem;
+  color: #888;
+  font-size: 1.1rem;
+}
+
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.route-card {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid #333;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.route-card:hover {
+  border-color: #00e5ff;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 229, 255, 0.2);
+}
+
+.route-card-content h3 {
+  color: #00e5ff;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.route-info {
+  margin-bottom: 1rem;
+}
+
+.route-info p {
+  margin: 0.5rem 0;
+  color: #ccc;
+}
+
+.route-info .label {
+  color: #888;
+  font-weight: 600;
+}
+
+.route-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.edit-btn,
+.delete-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.edit-btn:hover {
+  background-color: #45a049;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: #da190b;
+}

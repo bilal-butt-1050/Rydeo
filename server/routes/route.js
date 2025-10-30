@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getAllRoutes,
-  getRouteById,
+  getRouteDetails as getRouteById,
   createRoute,
   updateRoute,
   deleteRoute,

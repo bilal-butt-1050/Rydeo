@@ -13,12 +13,11 @@ export const createStudent = (studentData) =>
 export const createDriver = (driverData) =>
   api.post("/admin/create-driver", driverData);
 
-// Route management
-export const createRoute = (routeData) =>
-  api.post("/admin/create-route", routeData);
+// -------- ROUTE MANAGEMENT --------
 export const getAllRoutes = () => api.get("/admin/routes");
-export const getRouteById = (id) => api.get(`/admin/routes/${id}`);
-export const updateRoute = (id, routeData) =>
+export const getRouteDetails = (id) => api.get(`/admin/routes/${id}`);
+export const createRoute = (routeData) => api.post("/admin/routes", routeData);
+export const updateRoute = (id, routeData) => 
   api.put(`/admin/routes/${id}`, routeData);
 export const deleteRoute = (id) => api.delete(`/admin/routes/${id}`);
 

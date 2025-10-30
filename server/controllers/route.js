@@ -1,30 +1,49 @@
 import Route from "../models/route.js";
 import Stop from "../models/stop.js";
+import { Student, Driver } from "../models/user.js";
+import Bus from "../models/bus.js";
 
-// Get all routes with their stops
+// Get all routes
 export const getAllRoutes = async (req, res) => {
   try {
-    const routes = await Route.find().populate("stops");
+    const routes = await Route.find().populate('stops');
     res.json(routes);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get single route with stops
-export const getRouteById = async (req, res) => {
+// Get single route with detailed information
+export const getRouteDetails = async (req, res) => {
   try {
-    const route = await Route.findById(req.params.id).populate("stops");
+    const { id } = req.params;
+    
+    const route = await Route.findById(id).populate('stops');
+    
     if (!route) {
       return res.status(404).json({ message: "Route not found" });
     }
-    res.json(route);
+
+    // Find bus assigned to this route
+    const bus = await Bus.findOne({ route: id }).populate('driver');
+    
+    // Find students using stops on this route
+    const stopIds = route.stops.map(stop => stop._id);
+    const students = await Student.find({ defaultStop: { $in: stopIds } })
+      .populate('defaultStop');
+
+    res.json({
+      route,
+      bus,
+      driver: bus?.driver || null,
+      students,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Create new route
+// Create new route with stops
 export const createRoute = async (req, res) => {
   const { routeName, startPoint, endPoint, stops } = req.body;
 
@@ -35,27 +54,29 @@ export const createRoute = async (req, res) => {
       startPoint,
       endPoint,
     });
-
     await route.save();
 
-    // If stops are provided, create them and link to route
+    // Create stops if provided
     if (stops && stops.length > 0) {
-      const createdStops = await Stop.insertMany(
-        stops.map((stop) => ({
-          ...stop,
-          route: route._id,
-        }))
+      const createdStops = await Promise.all(
+        stops.map(async (stop) => {
+          const newStop = new Stop({
+            ...stop,
+            route: route._id,
+          });
+          return await newStop.save();
+        })
       );
-
+      
       // Update route with stop references
-      route.stops = createdStops.map((stop) => stop._id);
+      route.stops = createdStops.map(stop => stop._id);
       await route.save();
     }
 
-    const populatedRoute = await Route.findById(route._id).populate("stops");
-    res.status(201).json({
-      message: "Route created successfully",
-      route: populatedRoute,
+    const populatedRoute = await Route.findById(route._id).populate('stops');
+    res.status(201).json({ 
+      message: "Route created successfully", 
+      route: populatedRoute 
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -64,41 +85,49 @@ export const createRoute = async (req, res) => {
 
 // Update route
 export const updateRoute = async (req, res) => {
-  try {
-    const { routeName, startPoint, endPoint, stops } = req.body;
+  const { id } = req.params;
+  const { routeName, startPoint, endPoint, stops } = req.body;
 
-    const route = await Route.findById(req.params.id);
+  try {
+    const route = await Route.findById(id);
+    
     if (!route) {
       return res.status(404).json({ message: "Route not found" });
     }
 
     // Update basic route info
-    if (routeName) route.routeName = routeName;
-    if (startPoint) route.startPoint = startPoint;
-    if (endPoint) route.endPoint = endPoint;
+    route.routeName = routeName || route.routeName;
+    route.startPoint = startPoint || route.startPoint;
+    route.endPoint = endPoint || route.endPoint;
 
-    // If stops are provided, update them
+    // Handle stops update if provided
     if (stops) {
-      // Delete old stops
-      await Stop.deleteMany({ route: route._id });
-
+      // Delete existing stops
+      await Stop.deleteMany({ route: id });
+      
       // Create new stops
-      const createdStops = await Stop.insertMany(
-        stops.map((stop) => ({
-          ...stop,
-          route: route._id,
-        }))
-      );
-
-      route.stops = createdStops.map((stop) => stop._id);
+      if (stops.length > 0) {
+        const createdStops = await Promise.all(
+          stops.map(async (stop) => {
+            const newStop = new Stop({
+              ...stop,
+              route: id,
+            });
+            return await newStop.save();
+          })
+        );
+        route.stops = createdStops.map(stop => stop._id);
+      } else {
+        route.stops = [];
+      }
     }
 
     await route.save();
-    const updatedRoute = await Route.findById(route._id).populate("stops");
-
-    res.json({
-      message: "Route updated successfully",
-      route: updatedRoute,
+    const populatedRoute = await Route.findById(id).populate('stops');
+    
+    res.json({ 
+      message: "Route updated successfully", 
+      route: populatedRoute 
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -107,19 +136,22 @@ export const updateRoute = async (req, res) => {
 
 // Delete route
 export const deleteRoute = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const route = await Route.findById(req.params.id);
+    const route = await Route.findById(id);
+    
     if (!route) {
       return res.status(404).json({ message: "Route not found" });
     }
 
     // Delete all stops associated with this route
-    await Stop.deleteMany({ route: route._id });
-
+    await Stop.deleteMany({ route: id });
+    
     // Delete the route
     await route.deleteOne();
-
-    res.json({ message: "Route and its stops deleted successfully" });
+    
+    res.json({ message: "Route deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
