@@ -5,3 +5,5 @@
 @import url('./pages/AdminDashboard.css');
 @import url('./pages/StudentDashboard.css');
 @import url('./pages/DriverDashboard.css');
+@import url('./components/PlaceSearch.css');
+@import url('./pages/RouteManagement.css');

@@ -1,30 +1,77 @@
 import { useEffect, useRef, useState } from "react";
-import GoogleMapsLoader from "./GoogleMapsLoader";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-const FALLBACK_CENTER = { lat: 31.5204, lng: 74.3587 }; // Lahore fallback
+// Fix for default marker icon issue in Leaflet with bundlers
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-export default function MapView({ buses = [], currentUserLocation = null, showUserLocation = true }) {
-  const [currentPos, setCurrentPos] = useState(currentUserLocation);
-  const [error, setError] = useState("");
-  const [map, setMap] = useState(null);
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
+
+const FALLBACK_CENTER = [31.5204, 74.3587]; // Lahore fallback [lat, lng]
+
+export default function MapView() {
+  const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
-  const markersRef = useRef([]);
+  const markerRef = useRef(null);
+  const [currentPos, setCurrentPos] = useState(null);
+  const [error, setError] = useState("");
 
+  // Initialize map
   useEffect(() => {
-    if (!showUserLocation) return;
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    // Create map instance
+    const map = L.map(mapContainerRef.current).setView(FALLBACK_CENTER, 15);
+    mapRef.current = map;
+
+    // Add Geoapify tile layer
+    const isRetina = window.devicePixelRatio > 1;
+    const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
+    const baseUrl = `https://maps.geoapify.com/v1/tile/osm-carto/{z}/{x}/{y}.png?apiKey=${apiKey}`;
+    const retinaUrl = `https://maps.geoapify.com/v1/tile/osm-carto/{z}/{x}/{y}@2x.png?apiKey=${apiKey}`;
+
+    L.tileLayer(isRetina ? retinaUrl : baseUrl, {
+      maxZoom: 20,
+      id: "osm-carto",
+    }).addTo(map);
+
+    // Cleanup on unmount
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Get user location
+  useEffect(() => {
+    if (!mapRef.current) return;
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const coords = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          };
+          const coords = [pos.coords.latitude, pos.coords.longitude];
           setCurrentPos(coords);
 
-          if (map) {
-            map.panTo(coords);
-            setTimeout(() => map.setZoom(15), 300);
+          // Update map view
+          mapRef.current.setView(coords, 18);
+
+          // Add or update marker
+          if (markerRef.current) {
+            markerRef.current.setLatLng(coords);
+          } else {
+            markerRef.current = L.marker(coords)
+              .addTo(mapRef.current)
+              .bindPopup("You are here!")
+              .openPopup();
           }
         },
         (err) => setError(err.message),
@@ -33,99 +80,24 @@ export default function MapView({ buses = [], currentUserLocation = null, showUs
     } else {
       setError("Geolocation not supported by this browser.");
     }
-  }, [map, showUserLocation]);
-
-  useEffect(() => {
-    if (!map) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.setMap(null));
-    markersRef.current = [];
-
-    // Add bus markers
-    buses.forEach(bus => {
-      if (bus.latitude && bus.longitude) {
-        const marker = new window.google.maps.Marker({
-          position: { lat: bus.latitude, lng: bus.longitude },
-          map: map,
-          title: bus.busNumber || 'Bus',
-          icon: {
-            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-                <path fill="#FF6B6B" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                <circle fill="#FF6B6B" cx="12" cy="12" r="5"/>
-              </svg>
-            `),
-            scaledSize: new window.google.maps.Size(32, 32),
-          },
-        });
-
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `<div style="color: #000; padding: 5px;">
-            <strong>${bus.busNumber || 'Bus'}</strong><br/>
-            ${bus.driver || 'No driver assigned'}
-          </div>`,
-        });
-
-        marker.addListener('click', () => {
-          infoWindow.open(map, marker);
-        });
-
-        markersRef.current.push(marker);
-      }
-    });
-
-    // Add user location marker
-    if (currentPos && showUserLocation) {
-      const userMarker = new window.google.maps.Marker({
-        position: currentPos,
-        map: map,
-        title: 'Your Location',
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-              <circle fill="#4285F4" cx="12" cy="12" r="8"/>
-              <circle fill="#fff" cx="12" cy="12" r="3"/>
-            </svg>
-          `),
-          scaledSize: new window.google.maps.Size(32, 32),
-        },
-      });
-      markersRef.current.push(userMarker);
-    }
-  }, [map, buses, currentPos, showUserLocation]);
-
-  const initializeMap = () => {
-    if (!mapRef.current || map) return;
-
-    const newMap = new window.google.maps.Map(mapRef.current, {
-      center: currentPos || FALLBACK_CENTER,
-      zoom: 15,
-      disableDefaultUI: true,
-      zoomControl: true,
-    });
-
-    setMap(newMap);
-  };
+  }, []);
 
   const recenter = () => {
-    if (map && currentPos) {
-      map.panTo(currentPos);
-      setTimeout(() => map.setZoom(15), 300);
+    if (mapRef.current && currentPos) {
+      mapRef.current.setView(currentPos, 18);
     }
   };
 
+  if (error) return <div className="map-fallback">Error: {error}</div>;
+
   return (
-    <GoogleMapsLoader onLoad={initializeMap}>
-      <div className="map-shell">
-        {error && <div className="map-error">{error}</div>}
-        <div ref={mapRef} className="map-container" />
-        {showUserLocation && currentPos && (
-          <button className="recenter-btn" onClick={recenter}>
-            🎯 Re-center
-          </button>
-        )}
-      </div>
-    </GoogleMapsLoader>
+    <div className="map-shell">
+      <div ref={mapContainerRef} className="map-container" />
+      {currentPos && (
+        <button className="recenter-btn" onClick={recenter}>
+          🎯 Re-center
+        </button>
+      )}
+    </div>
   );
 }

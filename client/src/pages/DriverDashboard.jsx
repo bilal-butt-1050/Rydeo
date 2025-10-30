@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getDriverProfile, logout } from "../api";
-import "../styles/pages/DriverDashboard.css";
+
 
 export default function DriverDashboard() {
   const [msg, setMsg] = useState("");

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { getStudentProfile, logout } from "../api";
-import "../styles/pages/StudentDashboard.css";
 
 export default function StudentDashboard() {
   const [msg, setMsg] = useState("");

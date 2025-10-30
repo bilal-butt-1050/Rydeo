@@ -7,8 +7,7 @@ import "./styles/App.css";
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
-import DriverDashboard from './pages/DriverDashboard';
-import StudentDashboard from './pages/StudentDashboard';
+import RouteManagement from './pages/RouteManagement';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -43,27 +42,14 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/user/login" element={<Login onLogin={checkAuth} />} />
-        
-        {/* Admin Routes */}
         <Route
           path="/admin/dashboard"
           element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/user/login" />}
         />
-        
-        {/* Driver Routes */}
         <Route
-          path="/driver/profile"
-          element={user?.role === 'driver' ? <DriverDashboard /> : <Navigate to="/user/login" />}
+          path="/admin/routes"
+          element={user?.role === 'admin' ? <RouteManagement /> : <Navigate to="/user/login" />}
         />
-        
-        {/* Student Routes */}
-        <Route
-          path="/student/profile"
-          element={user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/user/login" />}
-        />
-        
-        {/* Catch all - redirect to login */}
-        <Route path="*" element={<Navigate to="/user/login" />} />
       </Routes>
     </Router>
   );
